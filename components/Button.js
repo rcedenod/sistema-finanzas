@@ -115,9 +115,6 @@ export class Button {
     remove() {
         // remover si el boton esta creado y si tiene un contenedor o padre
         if (this.buttonElement && this.buttonElement.parentElement) {
-            this.buttonElement.removeEventListener('click', this.onClick);
-            this.buttonElement.removeEventListener('mouseover', this.handleMouseOver);
-            this.buttonElement.removeEventListener('mouseout', this.handleMouseOut);
             this.buttonElement.parentElement.removeChild(this.buttonElement);
         }
     }

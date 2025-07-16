@@ -132,9 +132,6 @@ export class Select {
     // quitar del dom
     remove() {
         if (this.selectElement && this.selectElement.parentElement) {
-            this.selectElement.removeEventListener('focus', this.handleFocus);
-            this.selectElement.removeEventListener('blur', this.handleBlur);
-            this.selectElement.removeEventListener('change', this.onChange);
             this.selectElement.parentElement.removeChild(this.selectElement);
         }
     }

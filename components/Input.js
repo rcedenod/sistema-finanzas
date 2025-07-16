@@ -118,10 +118,6 @@ export class Input {
     }
     remove() {
         if (this.inputElement && this.inputElement.parentElement) {
-            this.inputElement.removeEventListener('focus', this.handleFocus);
-            this.inputElement.removeEventListener('blur', this.handleBlur);
-            this.inputElement.removeEventListener('input', this.onInput);
-            this.inputElement.removeEventListener('change', this.onChange);
             this.inputElement.parentElement.removeChild(this.inputElement);
         }
     }

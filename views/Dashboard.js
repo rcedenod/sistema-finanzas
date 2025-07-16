@@ -1,6 +1,10 @@
 import { Button } from '../components/Button.js';
+import { Textarea } from '../components/Textarea.js';
 
 export class Dashboard {
+    textarea = null;
+    textareaButton = null;
+
     render() {
         const div = document.createElement('div');
         div.innerHTML = '<h2>Bienvenido a su resumen de finanzas</h2><p>Resumen de finanzas...</p>';
@@ -41,6 +45,25 @@ export class Dashboard {
 		// probando botones
 		button1.setText('Hola mundo');
 		// button2.remove();
+
+        this.textarea = new Textarea(div, {
+            placeholder: 'Ingrese un texto',
+            rows: 10, 
+            styles: {
+                resize: 'none'
+            },
+            onInput: (event) => {
+                p1.textContent = this.textarea.getValue();
+            },
+        });
+
+        const lbl1 = document.createElement('label');
+		lbl1.textContent = 'Contenido textarea: ';
+		div.appendChild(lbl1);
+
+        const p1 = document.createElement('p1');
+		p1.textContent = ``;
+		div.appendChild(p1);
 
         return div;
     }
