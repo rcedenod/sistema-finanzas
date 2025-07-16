@@ -3,10 +3,10 @@ export class Button {
     _defaultStyles = {
         backgroundColor: '#34495E',
         color: 'white',
-        padding: '10px 20px',
+        padding: '10px 15px',
         border: 'none',
         borderRadius: '5px',
-        fontSize: '16px',
+        fontSize: '16px'
     };
 
     // hover por defecto del boton (si no se le pasan estilos por parametros)
@@ -96,11 +96,17 @@ export class Button {
         if (this.buttonElement) {
             this.buttonElement.disabled = isDisabled;
             if (isDisabled) {
-                // aplicar estilos de deshabilitado
+                // Aplicar estilos de deshabilitado
                 this._applyStyles(this.buttonElement, this.disabledStyles);
+                // Remover listeners de hover
+                this.buttonElement.removeEventListener('mouseover', this.handleMouseOver);
+                this.buttonElement.removeEventListener('mouseout', this.handleMouseOut);
             } else {
-                // restaurar estilos por defecto
+                // Restaurar estilos por defecto
                 this._applyStyles(this.buttonElement, this.initialStyles);
+                // ¡IMPORTANTE!: Volver a añadir los listeners de hover al habilitar
+                this.buttonElement.addEventListener('mouseover', this.handleMouseOver);
+                this.buttonElement.addEventListener('mouseout', this.handleMouseOut);
             }
         }
     }
