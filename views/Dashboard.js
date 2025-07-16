@@ -5,8 +5,16 @@ export class Dashboard {
         const div = document.createElement('div');
         div.innerHTML = '<h2>Bienvenido a su resumen de finanzas</h2><p>Resumen de finanzas...</p>';
 
+
+        div.style.display = 'flex';
+        div.style.flexDirection = 'column';
+        div.style.gap = '10px';
+
         const button1 = new Button(div, {
             text: 'Prueba Button 1',
+            styles: {
+                width: '20%'
+            },
             onClick: () => {
                 alert('onClick de Button 1');
             }
@@ -22,7 +30,7 @@ export class Dashboard {
                 color: '#00ff40ff',
                 padding: '15px',
                 borderRadius: '25px',
-                marginLeft: '10px'
+                width: '20%'
 			},
 			hoverStyles: {
 				backgroundColor: '#df1d08ff',
