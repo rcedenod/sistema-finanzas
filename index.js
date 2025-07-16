@@ -7,16 +7,18 @@ import { Budgets } from './views/Budgets.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 	const app = document.getElementById('main-container');
+	if (!app) return;
 
-	// renderizar navbar
-	app.appendChild(new Navbar('Budgenet').render());
+	// creo el contenedor principal de la aplicacion el cual es un grid
+	const appGridContainer = document.createElement('div');
+	appGridContainer.classList.add('app-grid-container');
+	app.appendChild(appGridContainer);
 
-	// contenedor de la pagina
-	const container = document.createElement('div');
-	container.classList.add('app-container');
-	app.appendChild(container);
+	// renderizar navbar y añadirlo al grid principal
+	const navbarElement = new Navbar('Budgenet').render();
+	appGridContainer.appendChild(navbarElement);
 
-	// definir las vistas a mostrar
+	// definir mis vistas y el componente al q pertenecen
 	const views = {
 		dashboard: { label: 'Resumen', component: Dashboard },
 		transactions: { label: 'Transacciones', component: Transactions },
@@ -24,37 +26,38 @@ document.addEventListener('DOMContentLoaded', () => {
 		budgets: { label: 'Presupuestos', component: Budgets }
 	};
 
-	// renderizar el sidebar con las opciones (vistas)
-	const sidebar = new Sidebar(
+	// renderizar sidebar y añadirlo al grid principal
+	const sidebarElement = new Sidebar(
 		Object.keys(views).map(key => ({ label: views[key].label, view: key }))
 	).render();
-	container.appendChild(sidebar);
+	appGridContainer.appendChild(sidebarElement);
 
-	// contenedor principal de la pagina
-	const content = document.createElement('main');
-	content.classList.add('content');
-	container.appendChild(content);
+	// area principal donde se muestra el contenido, añadirla al grid principal
+	const contentElement = document.createElement('main');
+	contentElement.classList.add('content');
+	appGridContainer.appendChild(contentElement);
 
-	// cargas una vista a cada opcion del sidebar
-	const loadView = (viewName) => {
-		// para mantener seleccionada una opcion en el sidebar
-		sidebar.querySelectorAll('.sidebar-item').forEach(li => {
-			li.classList.toggle('active', li.dataset.view === viewName);
+	// cargar vista a opcion del sidebar
+	const loadView = (view) => {
+		// highlight opcion seleccionada de la sidebar
+		sidebarElement.querySelectorAll('.sidebar-item').forEach(li => {
+			li.classList.toggle('active', li.dataset.view === view);
 		});
 
-		content.innerHTML = '';
-		const view = views[viewName];
-		if (view && view.component) {
-			const comp = new view.component();
-			content.appendChild(comp.render());
+		// limpiar contenido previo y renderizar componente
+		contentElement.innerHTML = '';
+		const viewConfig = views[view];
+		if (viewConfig && viewConfig.component) {
+			const comp = new viewConfig.component();
+			contentElement.appendChild(comp.render());
 		}
 	};
 
-    // agregar el evento para mostrar el contenido de una vista al hacer click en una opcion del sidebar
-	sidebar.querySelectorAll('.sidebar-item').forEach(li => {
+	// agregar el evento de mostrar componente correspondiente a cada opcion del sidebar
+	sidebarElement.querySelectorAll('.sidebar-item').forEach(li => {
 		li.addEventListener('click', () => loadView(li.dataset.view));
 	});
 
-    // cargar vista por defecto
+	// vista default dashboard
 	loadView('dashboard');
 });
