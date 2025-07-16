@@ -22,7 +22,7 @@ export class Categories {
                 { value: 'other', text: 'Otros' }
             ],
             styles: {
-                width: '250px'
+                width: '280px'
             },
             onChange: (event) => {
                 p1.textContent = this.categorySelect.getValue();
