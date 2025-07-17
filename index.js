@@ -7,7 +7,6 @@ import { Budgets } from './views/Budgets.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 	const app = document.getElementById('main-container');
-	if (!app) return;
 
 	// creo el contenedor principal de la aplicacion el cual es un grid
 	const appGridContainer = document.createElement('div');
@@ -30,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	const sidebarElement = new Sidebar(
 		Object.keys(views).map(key => ({ label: views[key].label, view: key }))
 	).render();
+
 	appGridContainer.appendChild(sidebarElement);
 
 	// area principal donde se muestra el contenido, añadirla al grid principal

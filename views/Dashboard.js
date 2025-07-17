@@ -15,7 +15,6 @@ export class Dashboard {
         div.style.gap = '10px';
 
         const button1 = new Button(div, {
-            text: 'Prueba Button 1',
             styles: {
                 width: '20%'
             },
@@ -42,8 +41,7 @@ export class Dashboard {
 			}
         });
 
-		// probando botones
-		button1.setText('Hola mundo');
+		// button1.setText('Hola mundo');
 		// button2.remove();
 
         this.textarea = new Textarea(div, {

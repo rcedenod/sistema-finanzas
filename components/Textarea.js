@@ -26,7 +26,7 @@ export class Textarea {
     };
 
     constructor(container, {
-        placeholder = '',
+        placeholder = 'Ingresar texto',
         value = '',
         rows = 3, // Propiedad específica para textarea
         styles = {},

@@ -19,7 +19,7 @@ export class Button {
         color: '#7f8c8d',
     };
 
-    constructor(container, { text, styles = {}, hoverStyles = {}, disabledStyles = {}, onClick = () => {} }) {
+    constructor(container, { text = 'Boton',  styles = {}, hoverStyles = {}, disabledStyles = {}, onClick = () => {} }) {
         if (!(container instanceof HTMLElement)) {
             throw new Error('Button: el parentElement debe ser un elemento HTML válido.');
         }
@@ -96,17 +96,11 @@ export class Button {
         if (this.buttonElement) {
             this.buttonElement.disabled = isDisabled;
             if (isDisabled) {
-                // Aplicar estilos de deshabilitado
+                // aplicar estilos de deshabilitado
                 this._applyStyles(this.buttonElement, this.disabledStyles);
-                // Remover listeners de hover
-                this.buttonElement.removeEventListener('mouseover', this.handleMouseOver);
-                this.buttonElement.removeEventListener('mouseout', this.handleMouseOut);
             } else {
-                // Restaurar estilos por defecto
+                // restaurar estilos por defecto
                 this._applyStyles(this.buttonElement, this.initialStyles);
-                // ¡IMPORTANTE!: Volver a añadir los listeners de hover al habilitar
-                this.buttonElement.addEventListener('mouseover', this.handleMouseOver);
-                this.buttonElement.addEventListener('mouseout', this.handleMouseOut);
             }
         }
     }
