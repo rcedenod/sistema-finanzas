@@ -2,18 +2,17 @@ import { Button } from '../components/Button.js';
 import { Textarea } from '../components/Textarea.js';
 
 export class Dashboard {
-    _container = null; // Añade una propiedad para el contenedor
-    _db = null;        // Añade una propiedad para la instancia de la base de datos
+    _container = null;
+    _db = null;
 
     textarea = null;
     textareaButton = null;
 
-    // Modifica el constructor para aceptar 'container' y 'db'
     constructor(container, db) {
         if (!(container instanceof HTMLElement)) {
             throw new Error('Dashboard: el container debe ser un elemento HTML válido.');
         }
-        if (!db) { // Aunque no se use directamente ahora, lo pasamos por consistencia
+        if (!db) {
             console.warn('Dashboard: la instancia de IndexedDB no fue proporcionada (no requerida directamente en esta vista).');
         }
         this._container = container;
@@ -74,10 +73,9 @@ export class Dashboard {
         p1.textContent = ``;
         div.appendChild(p1);
 
-        // Agrega el contenido al contenedor principal de la vista
-        this._container.innerHTML = ''; // Limpia el contenedor si es necesario
+        this._container.innerHTML = '';
         this._container.appendChild(div);
 
-        return div; // Opcional: si tu `index.js` necesita que `render()` devuelva un elemento.
+        return div; 
     }
 }

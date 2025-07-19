@@ -84,26 +84,26 @@ export class Categories {
         const headerArea = document.createElement('div');
         headerArea.classList.add('header');
         const title = document.createElement('h2');
-        title.textContent = 'Gestión de Categorías';
+        title.textContent = 'Gestión de categorías';
         headerArea.appendChild(title);
         categoriesView.appendChild(headerArea);
 
         const createArea = document.createElement('div');
         createArea.classList.add('create-area');
         const addCategoryTitle = document.createElement('h3');
-        addCategoryTitle.textContent = 'Añadir Nueva Categoría';
+        addCategoryTitle.textContent = 'Añadir categoría';
         createArea.appendChild(addCategoryTitle);
 
         const newCategoryInputWrapper = document.createElement('div');
         this._newCategoryInput = new Input(newCategoryInputWrapper, {
-            placeholder: 'Nombre de la nueva categoría',
+            placeholder: 'Nombre de la categoría',
             styles: { width: '96%' },
         });
         createArea.appendChild(this._newCategoryInput.render());
 
         const addCategoryButtonWrapper = document.createElement('div');
         const addCategoryButton = new Button(addCategoryButtonWrapper, {
-            text: 'Añadir Categoría',
+            text: 'Guardar',
             styles: {
                 width: '100%',
                 padding: '10px',
@@ -119,7 +119,7 @@ export class Categories {
         titleAndResetContainer.classList.add('title-reset-container');
 
         const listTitle = document.createElement('h3');
-        listTitle.textContent = 'Categorías Existentes';
+        listTitle.textContent = 'Categorías existentes';
         titleAndResetContainer.appendChild(listTitle);
 
         const resetLink = document.createElement('a');

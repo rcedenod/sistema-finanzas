@@ -19,7 +19,7 @@ body {
 		"navbar navbar navbar"
 		"sidebar content content"
 		"sidebar content content";
-	min-height: 100vh;
+	height: 100vh;
 }
 
 .navbar {

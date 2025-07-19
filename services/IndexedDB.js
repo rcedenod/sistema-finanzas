@@ -1,7 +1,7 @@
 export class IndexedDB {
     constructor() {
         this.dbName = 'BudgenetDB';
-        this.dbVersion = 10;
+        this.dbVersion = 15; // Revert or keep your current working version. No need to increment just for adding a property on transactions.
         this._db = null;
     }
 
@@ -25,6 +25,17 @@ export class IndexedDB {
                     console.log('IndexedDB: Almacén "categories" creado con índice "name".');
                 } else {
                     console.log('IndexedDB: Almacén "categories" ya existe. No se recrea.');
+                }
+
+                if (!db.objectStoreNames.contains('transactions')) {
+                    const transactionsStore = db.createObjectStore('transactions', { keyPath: 'id', autoIncrement: true });
+                    transactionsStore.createIndex('type', 'type', { unique: false });
+                    transactionsStore.createIndex('categoryId', 'categoryId', { unique: false });
+                    transactionsStore.createIndex('date', 'date', { unique: false });
+                    transactionsStore.createIndex('typeAndCategory', ['type', 'categoryId'], { unique: false });
+                    console.log('IndexedDB: Almacén "transactions" creado con índices.');
+                } else {
+                    console.log('IndexedDB: Almacén "transactions" ya existe.');
                 }
             };
 
@@ -164,6 +175,133 @@ export class IndexedDB {
             };
             request.onerror = (event) => {
                 console.error('IndexedDB: Error al añadir/actualizar categoría:', event.target.error);
+                reject(event.target.error);
+            };
+        });
+    }
+
+    async addTransaction(transaction) {
+        await this.initialize();
+        return new Promise((resolve, reject) => {
+            const transactionDB = this._db.transaction(['transactions'], 'readwrite');
+            const store = transactionDB.objectStore('transactions');
+
+            transaction.isEdited = false;
+            const request = store.add(transaction);
+
+            request.onsuccess = () => {
+                console.log('IndexedDB: Transacción añadida con éxito:', request.result);
+                resolve(request.result);
+            };
+            request.onerror = (event) => {
+                console.error('IndexedDB: Error al añadir transacción:', event.target.error);
+                reject(event.target.error);
+            };
+        });
+    }
+
+    async getTransactions() {
+        await this.initialize();
+        return new Promise((resolve, reject) => {
+            const transactionDB = this._db.transaction(['transactions'], 'readonly');
+            const store = transactionDB.objectStore('transactions');
+            const request = store.getAll();
+
+            request.onsuccess = () => {
+                console.log('IndexedDB: Todas las transacciones recuperadas.');
+                resolve(request.result);
+            };
+            request.onerror = (event) => {
+                console.error('IndexedDB: Error al obtener transacciones:', event.target.error);
+                reject(event.target.error);
+            };
+        });
+    }
+
+    async getTransactionById(id) {
+        await this.initialize();
+        return new Promise((resolve, reject) => {
+            const transactionDB = this._db.transaction(['transactions'], 'readonly');
+            const store = transactionDB.objectStore('transactions');
+            const request = store.get(id);
+
+            request.onsuccess = () => {
+                console.log(`IndexedDB: Transacción con ID ${id} recuperada:`, request.result);
+                resolve(request.result);
+            };
+            request.onerror = (event) => {
+                console.error(`IndexedDB: Error al obtener transacción con ID ${id}:`, event.target.error);
+                reject(event.target.error);
+            };
+        });
+    }
+
+    async updateTransaction(transaction) {
+        await this.initialize();
+        return new Promise((resolve, reject) => {
+            const transactionDB = this._db.transaction(['transactions'], 'readwrite');
+            const store = transactionDB.objectStore('transactions');
+
+            transaction.isEdited = true;
+            const request = store.put(transaction);
+
+            request.onsuccess = () => {
+                console.log(`IndexedDB: Transacción con ID ${transaction.id} actualizada.`);
+                resolve();
+            };
+            request.onerror = (event) => {
+                console.error(`IndexedDB: Error al actualizar transacción con ID ${transaction.id}:`, event.target.error);
+                reject(event.target.error);
+            };
+        });
+    }
+
+    async deleteTransaction(id) {
+        await this.initialize();
+        return new Promise((resolve, reject) => {
+            const transactionDB = this._db.transaction(['transactions'], 'readwrite');
+            const store = transactionDB.objectStore('transactions');
+            const request = store.delete(id);
+
+            transactionDB.oncomplete = () => {
+                console.log(`IndexedDB: Transacción de eliminación completada para ID: ${id}`);
+                resolve();
+            };
+            transactionDB.onerror = (event) => {
+                console.error(`IndexedDB: Error de transacción al eliminar ID: ${id}:`, event.target.error);
+                reject(event.target.error);
+            };
+        });
+    }
+
+    async getTransactionsFiltered(type = null, categoryId = null, searchTerm = null) {
+        await this.initialize();
+        return new Promise((resolve, reject) => {
+            const transactionDB = this._db.transaction(['transactions'], 'readonly');
+            const store = transactionDB.objectStore('transactions');
+            let request = store.getAll(); // Always get all and filter in memory
+
+            request.onsuccess = () => {
+                let transactions = request.result;
+
+                if (type && type !== 'all') {
+                    transactions = transactions.filter(t => t.type === type);
+                }
+                if (categoryId && categoryId !== 'all') {
+                    transactions = transactions.filter(t => t.categoryId === categoryId);
+                }
+                if (searchTerm) {
+                    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+                    transactions = transactions.filter(t =>
+                        (t.description && t.description.toLowerCase().includes(lowerCaseSearchTerm)) ||
+                        (t.categoryName && t.categoryName.toLowerCase().includes(lowerCaseSearchTerm))
+                    );
+                }
+                resolve(transactions);
+            };
+
+            request.onerror = (event) => {
+                console.error('IndexedDB: Error al obtener transacciones filtradas:', event.target.error);
                 reject(event.target.error);
             };
         });
