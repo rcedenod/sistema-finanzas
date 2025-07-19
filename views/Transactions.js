@@ -1,19 +1,34 @@
-import { Input } from '../components/Input.js';3
+import { Input } from '../components/Input.js';
 import { Button } from '../components/Button.js';
 
 export class Transactions {
-	usernameInput = null;
+    _container = null;
+    _db = null; // Añade una propiedad para la instancia de la base de datos
+
+    usernameInput = null;
     passwordInput = null;
 
-	render() {
-		const div = document.createElement('div');
-		div.innerHTML = '<h2>Bienvenido al apartado de transanciones</h2><p>Transancciones...</p>';
+    // Modifica el constructor para aceptar 'container' y 'db'
+    constructor(container, db) {
+        if (!(container instanceof HTMLElement)) {
+            throw new Error('Transactions: el container debe ser un elemento HTML válido.');
+        }
+        if (!db) { // Aunque no se use directamente ahora, lo pasamos por consistencia
+            console.warn('Transactions: la instancia de IndexedDB no fue proporcionada (no requerida directamente en esta vista).');
+        }
+        this._container = container;
+        this._db = db;
+    }
 
-		div.style.display = 'flex';
+    render() {
+        const div = document.createElement('div');
+        div.innerHTML = '<h2>Bienvenido al apartado de transacciones</h2><p>Transacciones...</p>'; // Corregido "Transanciones"
+
+        div.style.display = 'flex';
         div.style.flexDirection = 'column';
         div.style.gap = '10px';
 
-		this.usernameInput = new Input(div, {
+        this.usernameInput = new Input(div, {
             type: 'text',
             placeholder: 'Ingrese su nombre de usuario',
             onInput: (event) => {
@@ -24,15 +39,15 @@ export class Transactions {
         this.passwordInput = new Input(div, {
             type: 'password',
             placeholder: 'Contraseña',
-			onInput: (event) => {
+            onInput: (event) => {
                 p2.textContent = event.target.value;
             }
         });
 
-		const toggleInputDisabledBtn = new Button(div, {
+        const toggleInputDisabledBtn = new Button(div, {
             text: 'Deshabilitar input',
             styles: {
-				width: '15%'
+                width: '15%'
             },
             onClick: () => {
                 const currentDisabledState = this.usernameInput.inputElement.disabled;
@@ -40,22 +55,26 @@ export class Transactions {
             }
         });
 
-		const lbl1 = document.createElement('label');
-		lbl1.textContent = 'Valor input usuario: ';
-		div.appendChild(lbl1);
+        const lbl1 = document.createElement('label');
+        lbl1.textContent = 'Valor input usuario: ';
+        div.appendChild(lbl1);
 
-		const p1 = document.createElement('p1');
-		p1.textContent = ``;
-		div.appendChild(p1);
+        const p1 = document.createElement('p1');
+        p1.textContent = ``;
+        div.appendChild(p1);
 
-		const lbl2 = document.createElement('label');
-		lbl2.textContent = 'Valor input contraseña: ';
-		div.appendChild(lbl2);
+        const lbl2 = document.createElement('label');
+        lbl2.textContent = 'Valor input contraseña: ';
+        div.appendChild(lbl2);
 
-		const p2 = document.createElement('p1');
-		p2.textContent = ``;
-		div.appendChild(p2);
+        const p2 = document.createElement('p1');
+        p2.textContent = ``;
+        div.appendChild(p2);
 
-		return div;
-	}
+        // Agrega el contenido al contenedor principal de la vista
+        this._container.innerHTML = ''; // Limpia el contenedor si es necesario
+        this._container.appendChild(div);
+
+        return div; // Opcional: si tu `index.js` necesita que `render()` devuelva un elemento.
+    }
 }
