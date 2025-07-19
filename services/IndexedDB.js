@@ -1,7 +1,7 @@
 export class IndexedDB {
     constructor() {
         this.dbName = 'BudgenetDB';
-        this.dbVersion = 15; // Revert or keep your current working version. No need to increment just for adding a property on transactions.
+        this.dbVersion = 15;
         this._db = null;
     }
 
@@ -274,12 +274,50 @@ export class IndexedDB {
         });
     }
 
+    async deleteTransactionsByCategoryId(categoryId) {
+        await this.initialize();
+        return new Promise((resolve, reject) => {
+            const transactionDB = this._db.transaction(['transactions'], 'readwrite');
+            const store = transactionDB.objectStore('transactions');
+            const index = store.index('categoryId');
+            const request = index.openCursor(IDBKeyRange.only(categoryId));
+            let count = 0;
+
+            request.onsuccess = (event) => {
+                const cursor = event.target.result;
+                if (cursor) {
+                    cursor.delete();
+                    count++;
+                    cursor.continue();
+                } else {
+                    transactionDB.oncomplete = () => {
+                        console.log(`IndexedDB: Eliminadas ${count} transacciones para la categoría ID: ${categoryId}`);
+                        resolve(count);
+                    };
+                    transactionDB.onerror = (e) => {
+                        console.error('IndexedDB: Error al eliminar transacciones por categoryId:', e.target.error);
+                        reject(e.target.error);
+                    };
+                    transactionDB.onabort = (e) => {
+                        console.warn('IndexedDB: Transacción de eliminación de múltiples transacciones abortada:', e.target.error);
+                        reject(new Error('Transaction aborted'));
+                    };
+                }
+            };
+
+            request.onerror = (event) => {
+                console.error('IndexedDB: Error al abrir cursor para eliminar transacciones por categoryId:', event.target.error);
+                reject(event.target.error);
+            };
+        });
+    }
+
     async getTransactionsFiltered(type = null, categoryId = null, searchTerm = null) {
         await this.initialize();
         return new Promise((resolve, reject) => {
             const transactionDB = this._db.transaction(['transactions'], 'readonly');
             const store = transactionDB.objectStore('transactions');
-            let request = store.getAll(); // Always get all and filter in memory
+            let request = store.getAll();
 
             request.onsuccess = () => {
                 let transactions = request.result;

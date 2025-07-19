@@ -337,17 +337,22 @@ export class Categories {
         this.renderCategoriesList();
     }
 
-    async handleDeleteCategory(id, name) {
-        const confirmDelete = confirm(`¿Estás seguro de que deseas eliminar la categoría "${name}"?`);
+     async handleDeleteCategory(id, name) {
+        const confirmDelete = confirm(`¿Estás seguro de que deseas eliminar la categoría "${name}"? Todas las transacciones asociadas a esta categoría también serán eliminadas.`);
 
         if (confirmDelete) {
             try {
+                await this._db.deleteTransactionsByCategoryId(id);
+                console.log(`Todas las transacciones para la categoría ${name} (ID: ${id}) han sido eliminadas.`);
+
                 await this._db.deleteCategory(id);
-                alert(`¡Categoría "${name}" eliminada exitosamente!`);
+                alert(`¡Categoría "${name}" y sus transacciones asociadas eliminadas exitosamente!`);
+                const event = new CustomEvent('transactionsUpdated');
+                document.dispatchEvent(event);
                 await this.loadCategories();
             } catch (error) {
-                console.error('Error al eliminar categoría:', error);
-                alert('Hubo un error al intentar eliminar la categoría. Por favor, inténtalo de nuevo.');
+                console.error('Error al eliminar categoría y transacciones:', error);
+                alert('Hubo un error al intentar eliminar la categoría o sus transacciones. Por favor, inténtalo de nuevo.');
             }
         }
     }

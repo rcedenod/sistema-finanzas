@@ -34,6 +34,10 @@ export class Transactions {
         this._container = container;
         this._db = db;
         this._loadCSS(this._cssPath);
+
+        document.addEventListener('transactionsUpdated', () => {
+            this.loadTransactions();
+        });
     }
 
     _loadCSS(path) {
@@ -56,7 +60,6 @@ export class Transactions {
     async loadTransactions() {
         try {
             this._transactions = await this._db.getTransactions();
-            // Always sort by the original creation date (date) in descending order
             this._transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
             this.renderTransactionsList();
         } catch (error) {
@@ -84,7 +87,6 @@ export class Transactions {
         try {
             let filteredTransactions = await this._db.getTransactionsFiltered(filterType, filterCategoryId, searchTerm);
 
-            // Re-apply sorting after filtering to ensure consistent order
             filteredTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
             this._transactions = filteredTransactions;
@@ -138,7 +140,7 @@ export class Transactions {
         registerArea.appendChild(dateWrapper);
         this._transactionDateInput = new Input(dateWrapper, {
             type: 'date',
-            value: new Date().toISOString().slice(0, 10), // Default to current date
+            value: new Date().toISOString().slice(0, 10),
             styles: { width: '95%', marginBottom: '10px' },
         });
 
@@ -327,16 +329,15 @@ export class Transactions {
             return;
         }
 
-        // Combine the selected date from the input with the current time
         const now = new Date();
         const selectedDate = new Date(dateInput);
         selectedDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
-        const fullDateTime = selectedDate.toISOString(); // Save as ISO string for consistency
+        const fullDateTime = selectedDate.toISOString();
 
         const transactionData = {
             type,
             amount,
-            date: fullDateTime, // Use the date with current time
+            date: fullDateTime,
             categoryId,
             categoryName: selectedCategory.name,
             description
@@ -346,22 +347,20 @@ export class Transactions {
             if (this._currentEditingTransactionId) {
                 const originalTransaction = this._transactions.find(t => t.id === this._currentEditingTransactionId);
                 
-                // Keep original creation date and set isEdited to true
-                transactionData.date = originalTransaction.date; // Preserve original creation date
-                transactionData.isEdited = true; // Mark as edited
+                transactionData.date = originalTransaction.date;
+                transactionData.isEdited = true;
                 
                 transactionData.id = this._currentEditingTransactionId;
                 await this._db.updateTransaction(transactionData);
                 alert('Transacción actualizada exitosamente.');
                 this._currentEditingTransactionId = null;
             } else {
-                // When adding a new transaction, isEdited is set to false (in IndexedDB.js addTransaction)
                 await this._db.addTransaction(transactionData);
                 alert('Transacción registrada exitosamente.');
             }
             this.clearForm();
             await this.loadTransactions();
-            this.filterAndSearchTransactions(); // Re-apply filters if any were active
+            this.filterAndSearchTransactions();
         } catch (error) {
             console.error('Error al guardar transacción:', error);
             alert('Error al guardar la transacción. Por favor, intente de nuevo.');
