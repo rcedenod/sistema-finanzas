@@ -1,7 +1,7 @@
 export class IndexedDB {
     constructor() {
         this.dbName = 'BudgenetDB';
-        this.dbVersion = 15;
+        this.dbVersion = 16;
         this._db = null;
     }
 

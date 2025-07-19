@@ -314,7 +314,7 @@ export class Transactions {
     async handleAddOrUpdateTransaction() {
         const type = this._transactionTypeSelect.getValue();
         const amount = parseFloat(this._transactionAmountInput.getValue());
-        const dateInput = this._transactionDateInput.getValue(); // 'YYYY-MM-DD'
+        const dateInput = this._transactionDateInput.getValue();
         const categoryId = parseInt(this._transactionCategorySelect.getValue(), 10);
         const description = this._transactionDescriptionTextarea.getValue().trim();
 
@@ -329,10 +329,18 @@ export class Transactions {
             return;
         }
 
+        const parts = dateInput.split('-');
+        const year = parseInt(parts[0], 10); 
+        const month = parseInt(parts[1], 10) - 1; 
+        const day = parseInt(parts[2], 10);
+
+        const selectedDateLocal = new Date(year, month, day);
+
         const now = new Date();
-        const selectedDate = new Date(dateInput);
-        selectedDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
-        const fullDateTime = selectedDate.toISOString();
+
+        selectedDateLocal.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
+
+        const fullDateTime = selectedDateLocal.toISOString();
 
         const transactionData = {
             type,
@@ -346,15 +354,26 @@ export class Transactions {
         try {
             if (this._currentEditingTransactionId) {
                 const originalTransaction = this._transactions.find(t => t.id === this._currentEditingTransactionId);
-                
-                transactionData.date = originalTransaction.date;
-                transactionData.isEdited = true;
-                
-                transactionData.id = this._currentEditingTransactionId;
-                await this._db.updateTransaction(transactionData);
-                alert('Transacción actualizada exitosamente.');
-                this._currentEditingTransactionId = null;
+                if (originalTransaction) {
+                    const originalDateOnly = new Date(originalTransaction.date).toISOString().slice(0, 10);
+
+                    if (dateInput === originalDateOnly) {
+                        transactionData.date = originalTransaction.date;
+                    } else {
+                        transactionData.date = fullDateTime;
+                    }
+
+                    transactionData.isEdited = true;
+                    transactionData.id = this._currentEditingTransactionId;
+                    await this._db.updateTransaction(transactionData);
+                    alert('Transacción actualizada exitosamente.');
+                    this._currentEditingTransactionId = null;
+                } else {
+                    alert('Error: Transacción original no encontrada para actualizar.');
+                    return;
+                }
             } else {
+                transactionData.isEdited = false; 
                 await this._db.addTransaction(transactionData);
                 alert('Transacción registrada exitosamente.');
             }
@@ -366,6 +385,7 @@ export class Transactions {
             alert('Error al guardar la transacción. Por favor, intente de nuevo.');
         }
     }
+
 
     async handleEditTransaction(id) {
         if (this._currentEditingTransactionId !== null) {

@@ -133,6 +133,7 @@ export class Select {
     remove() {
         if (this.selectElement && this.selectElement.parentElement) {
             this.selectElement.parentElement.removeChild(this.selectElement);
+            this._selectElement = null;
         }
     }
 }

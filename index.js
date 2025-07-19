@@ -5,6 +5,7 @@ import { Transactions } from './views/Transactions.js';
 import { Categories } from './views/Categories.js';
 import { Budgets } from './views/Budgets.js';
 import { IndexedDB } from './services/IndexedDB.js';
+import { Charts } from './services/Charts.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const app = document.getElementById('main-container');
@@ -18,6 +19,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         alert('Hubo un problema al iniciar la base de datos. La aplicación podría no funcionar correctamente.');
         return;
     }
+
+    const charts = new Charts(db);
 
     const appGridContainer = document.createElement('div');
     appGridContainer.classList.add('app-grid-container');
@@ -52,7 +55,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const viewConfig = views[view];
         if (viewConfig && viewConfig.component) {
             if (!viewConfig.instance) {
-                if (view === 'categories' || view === 'transactions' || view === 'budgets') {
+                if(view === 'categories') {
+                    viewConfig.instance = new viewConfig.component(contentElement, db, charts);
+                }
+                else if (view === 'transactions' || view === 'budgets') {
                     viewConfig.instance = new viewConfig.component(contentElement, db);
                 } else {
                     viewConfig.instance = new viewConfig.component(contentElement);

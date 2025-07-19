@@ -1,28 +1,36 @@
-// Categories.js
+// views/Categories.js
 import { Input } from '../components/Input.js';
 import { Button } from '../components/Button.js';
+// No need to import Charts here, it's passed via constructor
 
 export class Categories {
     _container = null;
     _db = null;
+    _charts = null; // Declare _charts property
     _categories = [];
     _newCategoryInput = null;
     _editCategoryInput = null;
     _editingCategoryId = null;
     _categoriesListContainer = null;
+    _chartCategorySelect = null;
     _cssPath = './views/styles/Categories.css';
 
-    constructor(container, db) {
+    // Add 'charts' to the constructor
+    constructor(container, db, charts) {
         if (!(container instanceof HTMLElement)) {
             throw new Error('Categories: el container debe ser un elemento HTML válido.');
         }
         if (!db) {
             throw new Error('Categories: la instancia de IndexedDB es requerida.');
         }
+        if (!charts) {
+            throw new Error('Categories: la instancia de Charts es requerida.');
+        }
 
         this._container = container;
         this._db = db;
-        
+        this._charts = charts;
+
         this._loadCSS(this._cssPath);
 
         this.initializeDefaultCategories();
@@ -69,6 +77,7 @@ export class Categories {
                 return a.name.localeCompare(b.name);
             });
             this.renderCategoriesList();
+            await this._loadChartsForCurrentMonth();
         } catch (error) {
             console.error('Error al cargar categorías:', error);
             alert('Error al cargar las categorías. Por favor, intente de nuevo.');
@@ -141,7 +150,7 @@ export class Categories {
 
         const extraArea = document.createElement('div');
         extraArea.classList.add('extra');
-        
+        extraArea.id = 'category-charts-area';
         categoriesView.appendChild(extraArea);
 
         this._container.appendChild(categoriesView);
@@ -337,7 +346,7 @@ export class Categories {
         this.renderCategoriesList();
     }
 
-     async handleDeleteCategory(id, name) {
+    async handleDeleteCategory(id, name) {
         const confirmDelete = confirm(`¿Estás seguro de que deseas eliminar la categoría "${name}"? Todas las transacciones asociadas a esta categoría también serán eliminadas.`);
 
         if (confirmDelete) {
@@ -375,6 +384,39 @@ export class Categories {
                 console.error('Error al reestablecer categorías:', error);
                 alert('Hubo un error al reestablecer las categorías. Por favor, inténtalo de nuevo.');
             }
+        }
+    }
+
+    async _loadChartsForCurrentMonth() {
+        const today = new Date();
+        const currentMonth = today.getMonth() + 1;
+        const currentYear = today.getFullYear();
+
+        const extraArea = this._container.querySelector('#category-charts-area');
+        
+        if (extraArea && this._charts) {
+            extraArea.innerHTML = ''; 
+
+            const expensesChartContainer = document.createElement('div');
+            expensesChartContainer.classList.add('chart-wrapper');
+            expensesChartContainer.id = 'expenses-chart-container';
+            extraArea.appendChild(expensesChartContainer);
+
+            const incomesChartContainer = document.createElement('div');
+            incomesChartContainer.classList.add('chart-wrapper');
+            incomesChartContainer.id = 'incomes-chart-container';
+            extraArea.appendChild(incomesChartContainer);
+
+            console.log(`Generando gráfico de egresos para ${currentMonth}/${currentYear} en #expenses-chart-container`);
+            await this._charts.genExpensesByMonthCategory(expensesChartContainer, currentMonth, currentYear);
+
+            console.log(`Generando gráfico de ingresos para ${currentMonth}/${currentYear} en #incomes-chart-container`);
+            await this._charts.genIncomesByMonthCategory(incomesChartContainer, currentMonth, currentYear);
+
+        } else if (!extraArea) {
+            console.warn('Categories: #category-charts-area element not found for charts. Make sure it exists in render().');
+        } else {
+            console.warn('Categories: Charts instance not available. Make sure it is passed in the constructor.');
         }
     }
 }
