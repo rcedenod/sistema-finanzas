@@ -149,23 +149,4 @@ export class IndexedDB {
             };
         });
     }
-
-    async putCategory(category) {
-        await this.initialize();
-        return new Promise((resolve, reject) => {
-            const transaction = this._db.transaction(['categories'], 'readwrite');
-            const store = transaction.objectStore('categories');
-            const request = store.put(category);
-
-            request.onsuccess = () => {
-                const key = category.id || request.result;
-                console.log(`IndexedDB: Categoría '${category.name}' insertada/actualizada con ID: ${key}`);
-                resolve(key);
-            };
-            request.onerror = (event) => {
-                console.error('IndexedDB: Error al añadir/actualizar categoría:', event.target.error);
-                reject(event.target.error);
-            };
-        });
-    }
 }
