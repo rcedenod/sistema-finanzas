@@ -1,0 +1,134 @@
+/* categories.css */
+
+.categories-grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 0.1fr 0.4fr 1.3fr;
+    gap: 15px;
+    grid-auto-flow: row;
+    grid-template-areas:
+        "header header"
+        "create-area view-area"
+        "extra view-area";
+    width: 100%;
+    height: 100%;
+}
+
+.header {
+    grid-area: header;
+    background-color: #ecf0f1;
+    border-radius: 8px;
+    text-align: center;
+    padding: 10px;
+}
+
+.header h2 {
+    color: #2C3E50;
+    margin: 0;
+}
+
+.create-area {
+    grid-area: create-area;
+    border: 1px solid #eee;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.create-area h3 {
+    color: #34495E;
+    margin-top: 0;
+}
+
+.view-area {
+    grid-area: view-area;
+    border: 1px solid #eee;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+}
+
+.view-area h3 {
+    color: #34495E;
+    margin: 0;
+}
+
+.extra {
+    grid-area: extra;
+}
+
+.categories-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.category-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
+.category-name {
+    color: #2C3E50;
+}
+
+.category-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.edit-link, .delete-link, .reset-link, .save-link, .cancel-link {
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.edit-link, .reset-link, .cancel-link {
+    color: #6c757d;
+}
+
+.save-link {
+    color: #007bff;
+}
+
+.delete-link {
+    color: #dc3545;
+}
+
+.no-categories-message {
+    padding: 10px;
+    text-align: center;
+    color: #777;
+}
+
+.title-reset-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.edit-input-wrapper {
+    width: 100%;
+}
+
+.edit-actions-container {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    justify-content: flex-end;
+    width: 100%;
+}

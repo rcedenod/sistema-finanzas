@@ -1,3 +1,4 @@
+// Categories.js
 import { Input } from '../components/Input.js';
 import { Button } from '../components/Button.js';
 
@@ -9,6 +10,7 @@ export class Categories {
     _editCategoryInput = null;
     _editingCategoryId = null;
     _categoriesListContainer = null;
+    _cssPath = './views/styles/Categories.css';
 
     constructor(container, db) {
         if (!(container instanceof HTMLElement)) {
@@ -20,8 +22,17 @@ export class Categories {
 
         this._container = container;
         this._db = db;
+        
+        this._loadCSS(this._cssPath);
 
         this.initializeDefaultCategories();
+    }
+
+    _loadCSS(path) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = path;
+        document.head.appendChild(link);
     }
 
     async initializeDefaultCategories(forceRecreate = false) {
@@ -69,46 +80,18 @@ export class Categories {
 
         const categoriesView = document.createElement('div');
         categoriesView.classList.add('categories-grid-container');
-        categoriesView.style.display = 'grid';
-        categoriesView.style.gridTemplateColumns = '1fr 1fr';
-        categoriesView.style.gridTemplateRows = '0.1fr 0.4fr 1.3fr';
-        categoriesView.style.gap = '15px';
-        categoriesView.style.gridAutoFlow = 'row';
-        categoriesView.style.gridTemplateAreas = `
-            "header header"
-            "create-area view-area"
-            "extra view-area"
-        `;
-        categoriesView.style.width = '100%';
-        categoriesView.style.height = '100%';
 
         const headerArea = document.createElement('div');
         headerArea.classList.add('header');
-        headerArea.style.gridArea = 'header';
-        headerArea.style.backgroundColor = '#ecf0f1';
-        headerArea.style.borderRadius = '8px';
-        headerArea.style.textAlign = 'center';
-
         const title = document.createElement('h2');
         title.textContent = 'Gestión de Categorías';
-        title.style.color = '#2C3E50';
         headerArea.appendChild(title);
         categoriesView.appendChild(headerArea);
 
         const createArea = document.createElement('div');
         createArea.classList.add('create-area');
-        createArea.style.gridArea = 'create-area';
-        createArea.style.border = '1px solid #eee';
-        createArea.style.padding = '15px';
-        createArea.style.borderRadius = '8px';
-        createArea.style.backgroundColor = '#f9f9f9';
-        createArea.style.display = 'flex';
-        createArea.style.flexDirection = 'column';
-        createArea.style.gap = '10px';
-
         const addCategoryTitle = document.createElement('h3');
         addCategoryTitle.textContent = 'Añadir Nueva Categoría';
-        addCategoryTitle.style.color = '#34495E';
         createArea.appendChild(addCategoryTitle);
 
         const newCategoryInputWrapper = document.createElement('div');
@@ -132,33 +115,17 @@ export class Categories {
 
         const viewArea = document.createElement('div');
         viewArea.classList.add('view-area');
-        viewArea.style.gridArea = 'view-area';
-        viewArea.style.border = '1px solid #eee';
-        viewArea.style.padding = '15px';
-        viewArea.style.borderRadius = '8px';
-        viewArea.style.backgroundColor = '#f9f9f9';
-        viewArea.style.display = 'flex';
-        viewArea.style.flexDirection = 'column';
-        viewArea.style.gap = '10px';
-        viewArea.style.overflowY = 'auto';
-
         const titleAndResetContainer = document.createElement('div');
-        titleAndResetContainer.style.display = 'flex';
-        titleAndResetContainer.style.justifyContent = 'space-between';
-        titleAndResetContainer.style.alignItems = 'center';
+        titleAndResetContainer.classList.add('title-reset-container');
 
         const listTitle = document.createElement('h3');
         listTitle.textContent = 'Categorías Existentes';
-        listTitle.style.color = '#34495E';
-        listTitle.style.margin = '0';
         titleAndResetContainer.appendChild(listTitle);
 
         const resetLink = document.createElement('a');
         resetLink.href = '#';
         resetLink.textContent = 'Reestablecer categorías';
-        resetLink.style.color = '#6c757d';
-        resetLink.style.textDecoration = 'none';
-        resetLink.style.cursor = 'pointer';
+        resetLink.classList.add('reset-link');
         resetLink.addEventListener('click', (e) => {
             e.preventDefault();
             this.handleResetCategories();
@@ -168,18 +135,12 @@ export class Categories {
         viewArea.appendChild(titleAndResetContainer);
 
         this._categoriesListContainer = document.createElement('ul');
-        this._categoriesListContainer.style.listStyle = 'none';
-        this._categoriesListContainer.style.padding = '0';
-        this._categoriesListContainer.style.margin = '0';
-        this._categoriesListContainer.style.display = 'flex';
-        this._categoriesListContainer.style.flexDirection = 'column';
-        this._categoriesListContainer.style.gap = '8px';
+        this._categoriesListContainer.classList.add('categories-list');
         viewArea.appendChild(this._categoriesListContainer);
         categoriesView.appendChild(viewArea);
 
         const extraArea = document.createElement('div');
         extraArea.classList.add('extra');
-        extraArea.style.gridArea = 'extra';
         
         categoriesView.appendChild(extraArea);
 
@@ -198,39 +159,28 @@ export class Categories {
         if (this._categories.length === 0) {
             const noCategoriesMessage = document.createElement('li');
             noCategoriesMessage.textContent = 'No hay categorías para mostrar.';
-            noCategoriesMessage.style.padding = '10px';
-            noCategoriesMessage.style.textAlign = 'center';
-            noCategoriesMessage.style.color = '#777';
+            noCategoriesMessage.classList.add('no-categories-message');
             this._categoriesListContainer.appendChild(noCategoriesMessage);
             return;
         }
 
         this._categories.forEach(category => {
             const listItem = document.createElement('li');
-            listItem.style.display = 'flex';
-            listItem.style.justifyContent = 'space-between';
-            listItem.style.alignItems = 'center';
-            listItem.style.padding = '10px 15px';
-            listItem.style.border = '1px solid #ddd';
-            listItem.style.borderRadius = '5px';
-            listItem.style.backgroundColor = '#fff';
+            listItem.classList.add('category-item');
 
             const categoryNameDisplay = document.createElement('span');
             categoryNameDisplay.textContent = category.name;
-            categoryNameDisplay.style.color = '#2C3E50';
+            categoryNameDisplay.classList.add('category-name');
 
             listItem.appendChild(categoryNameDisplay);
 
             const actionsContainer = document.createElement('div');
-            actionsContainer.style.display = 'flex';
-            actionsContainer.style.gap = '10px';
+            actionsContainer.classList.add('category-actions');
 
             const editLink = document.createElement('a');
             editLink.href = '#';
             editLink.textContent = 'Editar';
-            editLink.style.color = '#6c757d';
-            editLink.style.textDecoration = 'none';
-            editLink.style.cursor = 'pointer';
+            editLink.classList.add('edit-link');
             editLink.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.handleEditCategory(category.id, category.name, listItem, categoryNameDisplay);
@@ -240,9 +190,7 @@ export class Categories {
             const deleteLink = document.createElement('a');
             deleteLink.href = '#';
             deleteLink.textContent = 'Eliminar';
-            deleteLink.style.color = '#dc3545';
-            deleteLink.style.textDecoration = 'none';
-            deleteLink.style.cursor = 'pointer';
+            deleteLink.classList.add('delete-link');
             deleteLink.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.handleDeleteCategory(category.id, category.name);
@@ -298,10 +246,11 @@ export class Categories {
         this._editingCategoryId = id;
 
         listItem.innerHTML = '';
+        listItem.classList.add('category-item-editing');
         listItem.style.flexDirection = 'column';
 
         const editInputWrapper = document.createElement('div');
-        editInputWrapper.style.width = '100%';
+        editInputWrapper.classList.add('edit-input-wrapper');
 
         this._editCategoryInput = new Input(editInputWrapper, {
             value: currentName,
@@ -312,18 +261,12 @@ export class Categories {
         listItem.appendChild(editInputField);
 
         const newActionsContainer = document.createElement('div');
-        newActionsContainer.style.display = 'flex';
-        newActionsContainer.style.gap = '10px';
-        newActionsContainer.style.marginTop = '10px';
-        newActionsContainer.style.justifyContent = 'flex-end';
-        newActionsContainer.style.width = '100%';
+        newActionsContainer.classList.add('edit-actions-container');
 
         const saveLink = document.createElement('a');
         saveLink.href = '#';
         saveLink.textContent = 'Guardar';
-        saveLink.style.color = '#007bff';
-        saveLink.style.textDecoration = 'none';
-        saveLink.style.cursor = 'pointer';
+        saveLink.classList.add('save-link');
         saveLink.addEventListener('click', (e) => {
             e.preventDefault();
             this.handleSaveEdit(id);
@@ -333,9 +276,7 @@ export class Categories {
         const cancelLink = document.createElement('a');
         cancelLink.href = '#';
         cancelLink.textContent = 'Cancelar';
-        cancelLink.style.color = '#6c757d';
-        cancelLink.style.textDecoration = 'none';
-        cancelLink.style.cursor = 'pointer';
+        cancelLink.classList.add('cancel-link');
         cancelLink.addEventListener('click', (e) => {
             e.preventDefault();
             this.cancelEdit();
