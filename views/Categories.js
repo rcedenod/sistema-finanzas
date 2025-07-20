@@ -1,12 +1,12 @@
 // views/Categories.js
 import { Input } from '../components/Input.js';
 import { Button } from '../components/Button.js';
-// No need to import Charts here, it's passed via constructor
+import { Select } from '../components/Select.js';
 
 export class Categories {
     _container = null;
     _db = null;
-    _charts = null; // Declare _charts property
+    _charts = null;
     _categories = [];
     _newCategoryInput = null;
     _editCategoryInput = null;
@@ -15,7 +15,10 @@ export class Categories {
     _chartCategorySelect = null;
     _cssPath = './views/styles/Categories.css';
 
-    // Add 'charts' to the constructor
+    _monthSelect = null;
+    _currentMonth = new Date().getMonth() + 1;
+    _currentYear = new Date().getFullYear();
+
     constructor(container, db, charts) {
         if (!(container instanceof HTMLElement)) {
             throw new Error('Categories: el container debe ser un elemento HTML válido.');
@@ -37,10 +40,17 @@ export class Categories {
     }
 
     _loadCSS(path) {
+        const existingLink = document.querySelector(`link[href="${path}"]`);
+        if (existingLink) {
+            console.log(`Stylesheet "${path}" already loaded.`);
+            return;
+        }
+
         const link = document.createElement('link');
         link.rel = 'stylesheet';
         link.href = path;
         document.head.appendChild(link);
+        console.log(`Stylesheet "${path}" loaded.`);
     }
 
     async initializeDefaultCategories(forceRecreate = false) {
@@ -77,7 +87,7 @@ export class Categories {
                 return a.name.localeCompare(b.name);
             });
             this.renderCategoriesList();
-            await this._loadChartsForCurrentMonth();
+            await this._loadChartsForCurrentMonth(this._currentMonth, this._currentYear);
         } catch (error) {
             console.error('Error al cargar categorías:', error);
             alert('Error al cargar las categorías. Por favor, intente de nuevo.');
@@ -151,6 +161,40 @@ export class Categories {
         const extraArea = document.createElement('div');
         extraArea.classList.add('extra');
         extraArea.id = 'category-charts-area';
+
+        const monthSelectorContainer = document.createElement('div');
+        monthSelectorContainer.classList.add('month-selector-container');
+        
+        const monthSelectTitle = document.createElement('h3');
+        monthSelectTitle.textContent = 'Mes: ';
+        monthSelectorContainer.appendChild(monthSelectTitle);
+
+        const monthOptions = [];
+        const monthNames = [
+            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+        ];
+        
+        monthNames.forEach((name, index) => {
+            monthOptions.push({ value: (index + 1).toString(), text: name });
+        });
+
+        const monthSelectWrapper = document.createElement('div');
+        monthSelectWrapper.classList.add('month-select-wrapper');
+        this._monthSelect = new Select(monthSelectWrapper, {
+            items: monthOptions,
+            selectedValue: this._currentMonth.toString(),
+            styles: { width: '100%' },
+            onChange: (event) => this._handleMonthChange(event.target.value)
+        });
+        monthSelectorContainer.appendChild(this._monthSelect.render());
+        extraArea.appendChild(monthSelectorContainer);
+
+        const chartsContainerWrapper = document.createElement('div');
+        chartsContainerWrapper.id = 'charts-display-area';
+        chartsContainerWrapper.classList.add('charts-container-wrapper');
+        extraArea.appendChild(chartsContainerWrapper);
+
         categoriesView.appendChild(extraArea);
 
         this._container.appendChild(categoriesView);
@@ -387,25 +431,26 @@ export class Categories {
         }
     }
 
-    async _loadChartsForCurrentMonth() {
-        const today = new Date();
-        const currentMonth = today.getMonth() + 1;
-        const currentYear = today.getFullYear();
+    async _handleMonthChange(selectedMonthValue) {
+        this._currentMonth = parseInt(selectedMonthValue, 10);
+        console.log(`Mes seleccionado: ${this._currentMonth}/${this._currentYear}`);
+        await this._loadChartsForCurrentMonth(this._currentMonth, this._currentYear);
+    }
 
-        const extraArea = this._container.querySelector('#category-charts-area');
+    async _loadChartsForCurrentMonth(currentMonth, currentYear) {
+        const chartsDisplayArea = this._container.querySelector('#charts-display-area');
         
-        if (extraArea && this._charts) {
-            extraArea.innerHTML = ''; 
-
+        if (chartsDisplayArea && this._charts) {
+            chartsDisplayArea.innerHTML = '';
             const expensesChartContainer = document.createElement('div');
             expensesChartContainer.classList.add('chart-wrapper');
             expensesChartContainer.id = 'expenses-chart-container';
-            extraArea.appendChild(expensesChartContainer);
+            chartsDisplayArea.appendChild(expensesChartContainer);
 
             const incomesChartContainer = document.createElement('div');
             incomesChartContainer.classList.add('chart-wrapper');
             incomesChartContainer.id = 'incomes-chart-container';
-            extraArea.appendChild(incomesChartContainer);
+            chartsDisplayArea.appendChild(incomesChartContainer);
 
             console.log(`Generando gráfico de egresos para ${currentMonth}/${currentYear} en #expenses-chart-container`);
             await this._charts.genExpensesByMonthCategory(expensesChartContainer, currentMonth, currentYear);
@@ -413,8 +458,8 @@ export class Categories {
             console.log(`Generando gráfico de ingresos para ${currentMonth}/${currentYear} en #incomes-chart-container`);
             await this._charts.genIncomesByMonthCategory(incomesChartContainer, currentMonth, currentYear);
 
-        } else if (!extraArea) {
-            console.warn('Categories: #category-charts-area element not found for charts. Make sure it exists in render().');
+        } else if (!chartsDisplayArea) {
+            console.warn('Categories: #charts-display-area element not found for charts. Make sure it exists in render().');
         } else {
             console.warn('Categories: Charts instance not available. Make sure it is passed in the constructor.');
         }

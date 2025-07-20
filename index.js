@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const viewConfig = views[view];
         if (viewConfig && viewConfig.component) {
             if (!viewConfig.instance) {
-                if(view === 'categories') {
+                if(view === 'categories' || 'dashboard') {
                     viewConfig.instance = new viewConfig.component(contentElement, db, charts);
                 }
                 else if (view === 'transactions' || view === 'budgets') {
