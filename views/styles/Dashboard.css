@@ -1,16 +1,18 @@
 .dashboardView {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: 0.2fr 1.6fr 1.2fr;
+    grid-template-rows: 0.2fr 1.4fr 1.4fr;
     gap: 15px;
     grid-auto-flow: row;
     grid-template-areas:
         "header header header"
-        "aside recent-transactions recent-transactions"
-        "aside expenses-incomes graph";
+        "aside recent-transactions graph2"
+        "aside expenses-incomes balance-evolution";
     height: 100%;
     width: 100%;
     background-color: #f4f7f6;
+    padding: 15px;
+    box-sizing: border-box;
 }
 
 .header {
@@ -21,14 +23,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2em;
+    font-size: 20px;
     color: #333;
 }
 
 .recent-transactions {
     grid-area: recent-transactions;
     background-color: #ffffff;
-    padding: 20px;
+    padding: 10px;
     border-radius: 8px;
     display: flex;
     flex-direction: column;
@@ -37,16 +39,138 @@
     overflow-y: auto;
 }
 
+.recent-transactions h3 {
+    margin-top: 0;
+    padding-bottom: 8px;
+    color: #34495E;
+    font-size: 18px;
+}
+
+.transactions-list {
+    list-style: none;
+    padding: 0;
+    width: 100%;
+}
+
+.transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px;
+    margin-bottom: 5px;
+    border-radius: 6px;
+    transition: transform 0.2s ease-in-out;
+    font-size: 14px;
+}
+
+.transaction-item:hover {
+    transform: translateY(-1px);
+}
+
+.income-item {
+    background-color: #e6ffe6;
+    border-left: 4px solid #4CAF50;
+}
+
+.expense-item {
+    background-color: #ffe6e6;
+    border-left: 4px solid #f44336;
+}
+
+.transaction-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.transaction-type {
+    font-weight: bold;
+    font-size: 13px;
+    color: #666;
+}
+
+.transaction-amount {
+    font-weight: bold;
+    font-size: 16px;
+    color: #333;
+}
+
+.income-item .transaction-amount {
+    color: #28a745;
+}
+
+.expense-item .transaction-amount {
+    color: #dc3545;
+}
+
+.transaction-date {
+    font-size: 13px;
+    color: #888;
+}
+
+.transaction-category {
+    font-style: italic;
+    font-size: 13px;
+    color: #777;
+}
+
+.transaction-description {
+    font-size: 13px;
+    color: #444;
+    margin-top: 2px;
+    word-break: break-word;
+}
+
+.transaction-actions {
+    display: none;
+}
+
+.no-transactions-message {
+    text-align: center;
+    color: #888;
+    padding: 10px;
+    font-style: italic;
+    width: 100%;
+}
+
+.no-chart-data-message {
+    text-align: center;
+    color: #888;
+    padding: 10px;
+    font-style: italic;
+    width: 100%; 
+}
+
 .expenses-incomes {
     grid-area: expenses-incomes;
     background-color: #ffffff;
-    padding: 20px;
+    padding: 10px;
     border-radius: 8px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     overflow: hidden;
+}
+
+.balance-evolution {
+    grid-area: balance-evolution;
+    background-color: #ffffff;
+    padding: 10px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.balance-evolution-chart-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .aside {
@@ -60,8 +184,8 @@
     align-items: flex-start;
 }
 
-.graph {
-    grid-area: graph;
+.graph2 {
+    grid-area: graph2;
     background-color: #ffffff;
     padding: 20px;
     border-radius: 8px;

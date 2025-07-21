@@ -94,6 +94,8 @@ export class Categories {
         }
     }
 
+    genExpensesByMonthCategory
+    
     render() {
         this._container.innerHTML = '';
 
