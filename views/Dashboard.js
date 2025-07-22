@@ -33,7 +33,7 @@ export class Dashboard {
         document.addEventListener('transactionsUpdated', async () => {
             console.log('transactionsUpdated event received in Dashboard, refreshing data.');
             await this.loadRecentTransactions();
-            await this.renderCharts(); // También refrescar gráficos
+            await this.renderCharts();
         });
     }
 

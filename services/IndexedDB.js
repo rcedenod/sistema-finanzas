@@ -1,7 +1,7 @@
 export class IndexedDB {
     constructor() {
         this.dbName = 'BudgenetDB';
-        this.dbVersion = 16;
+        this.dbVersion = 21;
         this._db = null;
     }
 
@@ -37,6 +37,20 @@ export class IndexedDB {
                 } else {
                     console.log('IndexedDB: Almacén "transactions" ya existe.');
                 }
+
+                if (!db.objectStoreNames.contains('budgets')) {
+                    const budgetsStore = db.createObjectStore('budgets', { keyPath: 'id', autoIncrement: true });
+                    // This line is crucial for creating the index
+                    budgetsStore.createIndex('monthYear', ['month', 'year'], { unique: false });
+                    console.log('Object store "budgets" created with "monthYear" index.');
+                } else {
+                    // If the store already exists, ensure the index is added if it's missing
+                    const budgetsStore = event.target.transaction.objectStore('budgets');
+                    if (!budgetsStore.indexNames.contains('monthYear')) {
+                        budgetsStore.createIndex('monthYear', ['month', 'year'], { unique: false });
+                        console.log('IndexedDB: Index "monthYear" added to "budgets" store.');
+                    }
+                }
             };
 
             request.onsuccess = (event) => {
@@ -58,6 +72,110 @@ export class IndexedDB {
             this._db = null;
             console.log('IndexedDB: Conexión de la base de datos cerrada.');
         }
+    }
+
+    async addBudget(budget) {
+        await this.initialize();
+        return new Promise((resolve, reject) => {
+            const transaction = this._db.transaction(['budgets'], 'readwrite');
+            const store = transaction.objectStore('budgets');
+            const request = store.add(budget);
+
+            request.onsuccess = () => {
+                console.log(`IndexedDB: Presupuesto añadido con ID: ${request.result}`);
+                resolve(request.result);
+            };
+            request.onerror = (event) => {
+                console.error('IndexedDB: Error al añadir presupuesto:', event.target.error);
+                reject(event.target.error);
+            };
+        });
+    }
+
+    async getBudgets() {
+        await this.initialize();
+        return new Promise((resolve, reject) => {
+            const transaction = this._db.transaction(['budgets'], 'readonly');
+            const store = transaction.objectStore('budgets');
+            const request = store.getAll();
+
+            request.onsuccess = () => {
+                console.log('IndexedDB: Todos los presupuestos recuperados.');
+                resolve(request.result);
+            };
+            request.onerror = (event) => {
+                console.error('IndexedDB: Error al obtener presupuestos:', event.target.error);
+                reject(event.target.error);
+            };
+        });
+    }
+    
+    async updateBudget(budget) {
+        await this.initialize();
+        return new Promise((resolve, reject) => {
+            const transaction = this._db.transaction(['budgets'], 'readwrite');
+            const store = transaction.objectStore('budgets');
+            const request = store.put(budget);
+
+            request.onsuccess = () => {
+                console.log(`IndexedDB: Presupuesto con ID ${budget.id} actualizado.`);
+                resolve();
+            };
+            request.onerror = (event) => {
+                console.error(`IndexedDB: Error al actualizar presupuesto con ID ${budget.id}:`, event.target.error);
+                reject(event.target.error);
+            };
+        });
+    }
+
+    async deleteBudget(id) {
+        await this.initialize();
+        return new Promise((resolve, reject) => {
+            const transaction = this._db.transaction(['budgets'], 'readwrite');
+            const store = transaction.objectStore('budgets');
+            const request = store.delete(id);
+
+            transaction.oncomplete = () => {
+                console.log(`IndexedDB: Transacción de eliminación completada para presupuesto ID: ${id}`);
+                resolve();
+            };
+            transaction.onerror = (event) => {
+                console.error(`IndexedDB: Error de transacción al eliminar presupuesto ID: ${id}:`, event.target.error);
+                reject(event.target.error);
+            };
+            transaction.onabort = (event) => {
+                console.warn(`IndexedDB: Transacción abortada al eliminar presupuesto ID: ${id}:`, event.target.error);
+                reject(new Error('Transaction aborted'));
+            };
+
+            request.onsuccess = () => {
+                console.log(`IndexedDB: Solicitud de eliminación para presupuesto ID ${id} enviada.`);
+            };
+            request.onerror = (event) => {
+                console.error(`IndexedDB: Error en la solicitud de eliminación para presupuesto ID ${id}:`, event.target.error);
+            };
+        });
+    }
+
+    async getBudgetsByMonthYear(month, year) {
+        await this.initialize();
+        return new Promise((resolve, reject) => {
+            const transaction = this._db.transaction(['budgets'], 'readonly');
+            const store = transaction.objectStore('budgets');
+            const index = store.index('monthYear');
+            const keyRange = IDBKeyRange.only([month, year]);
+
+            const request = index.getAll(keyRange);
+
+            request.onsuccess = () => {
+                console.log(`IndexedDB: Presupuestos para ${month}/${year} recuperados.`);
+                resolve(request.result);
+            };
+            request.onerror = (event) => {
+                console.error(`IndexedDB: Error al obtener presupuestos para ${month}/${year}:`, event.target.error);
+                reject(event.target.error);
+            };
+        });
     }
 
     async addCategory(category) {
