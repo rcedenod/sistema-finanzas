@@ -58,7 +58,7 @@ export class Dashboard {
         const recentTransactionsArea = document.createElement('div');
         recentTransactionsArea.classList.add('recent-transactions');
         const recentTransactionsTitle = document.createElement('h3');
-        recentTransactionsTitle.textContent = 'Transacciones del Mes';
+        recentTransactionsTitle.textContent = 'Transacciones del mes';
         recentTransactionsArea.appendChild(recentTransactionsTitle);
 
         this._recentTransactionsListContainer = document.createElement('ul');

@@ -10,12 +10,12 @@
         "aside expenses-incomes balance-evolution";
     height: 100%;
     width: 100%;
-    background-color: #f4f7f6;
+    background-color: #ecf0f1;
 }
 
 .header {
     grid-area: header;
-    background-color: #ffffff;
+    background-color: #ecf0f1;
     padding: 20px;
     border-radius: 8px;
     display: flex;

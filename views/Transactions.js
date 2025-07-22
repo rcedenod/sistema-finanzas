@@ -19,6 +19,9 @@ export class Transactions {
     _filterTypeSelect = null;
     _filterCategorySelect = null;
     _searchTextInput = null;
+    _applyFilterButton = null;
+    _clearFilterButton = null;
+
 
     _transactionsListContainer = null;
     _currentEditingTransactionId = null;
@@ -37,6 +40,14 @@ export class Transactions {
 
         document.addEventListener('transactionsUpdated', () => {
             this.loadTransactions();
+        });
+        document.addEventListener('categoryDeleted', async () => {
+            await this.loadCategories();
+            this.applyFilters();
+        });
+        document.addEventListener('categoriesUpdated', async () => {
+            await this.loadCategories();
+            this.applyFilters();
         });
     }
 
@@ -183,8 +194,7 @@ export class Transactions {
                 { value: 'expense', text: 'Egresos' }
             ],
             selectedValue: 'all',
-            styles: { width: '100%', marginBottom: '10px' },
-            onChange: () => this.filterAndSearchTransactions()
+            styles: { width: '100%', marginBottom: '10px' }
         });
         this._filterTypeSelect.render();
 
@@ -192,8 +202,7 @@ export class Transactions {
         filtersArea.appendChild(filterCategoryWrapper);
         this._filterCategorySelect = new Select(filterCategoryWrapper, {
             items: [{ value: 'all', text: 'Todas las categorías' }],
-            styles: { width: '100%', marginBottom: '10px' },
-            onChange: () => this.filterAndSearchTransactions()
+            styles: { width: '100%', marginBottom: '10px' }
         });
         this._filterCategorySelect.render();
 
@@ -202,9 +211,26 @@ export class Transactions {
         this._searchTextInput = new Input(searchInputWrapper, {
             placeholder: 'Buscar por descripción o categoría',
             styles: { width: '95%', marginBottom: '10px' },
-            onInput: () => this.filterAndSearchTransactions()
         });
         this._searchTextInput.render();
+
+        const filterButtonsWrapper = document.createElement('div');
+        filterButtonsWrapper.classList.add('filter-buttons-wrapper');
+        filtersArea.appendChild(filterButtonsWrapper);
+
+        this._applyFilterButton = new Button(filterButtonsWrapper, {
+            text: 'Aplicar Filtro',
+            styles: { flex: '1', padding: '10px', marginTop: '10px', marginRight: '5px' },
+            onClick: () => this.applyFilters()
+        });
+        this._applyFilterButton.render();
+
+        this._clearFilterButton = new Button(filterButtonsWrapper, {
+            text: 'Limpiar Filtro',
+            styles: { flex: '1', padding: '10px', marginTop: '10px', backgroundColor: '#6c757d', marginLeft: '5px' }
+        });
+        this._clearFilterButton.render();
+
         container.appendChild(filtersArea);
 
         const contentArea = document.createElement('div');
@@ -222,34 +248,33 @@ export class Transactions {
 
         this.loadCategories();
         this.loadTransactions();
-
-        return container;
     }
 
     updateCategorySelects() {
         const categoryOptions = [{ value: 'all', text: 'Todas las categorías' }];
-        const formCategoryOptions = [];
-
         this._categories.forEach(cat => {
             categoryOptions.push({ value: cat.id, text: cat.name });
-            formCategoryOptions.push({ value: cat.id, text: cat.name });
         });
 
         this._transactionCategorySelect.remove();
-        const formCategoryWrapper = this._transactionCategorySelect.container;
-        this._transactionCategorySelect = new Select(formCategoryWrapper, {
-            items: formCategoryOptions,
+        const transactionCategoryWrapper = this._transactionCategorySelect.container;
+        this._transactionCategorySelect = new Select(transactionCategoryWrapper, {
+            items: categoryOptions.filter(opt => opt.value !== 'all'),
             styles: { width: '100%', marginBottom: '10px' },
         });
-        formCategoryWrapper.appendChild(this._transactionCategorySelect.render());
+        transactionCategoryWrapper.appendChild(this._transactionCategorySelect.render());
+        if (categoryOptions.filter(opt => opt.value !== 'all').length > 0) {
+            this._transactionCategorySelect.setValue(categoryOptions.filter(opt => opt.value !== 'all')[0].value);
+        } else {
+            this._transactionCategorySelect.setValue('');
+        }
 
         this._filterCategorySelect.remove();
         const filterCategoryWrapper = this._filterCategorySelect.container;
         this._filterCategorySelect = new Select(filterCategoryWrapper, {
             items: categoryOptions,
-            selectedValue: 'all',
             styles: { width: '100%', marginBottom: '10px' },
-            onChange: () => this.filterAndSearchTransactions()
+            selectedValue: 'all'
         });
         filterCategoryWrapper.appendChild(this._filterCategorySelect.render());
     }
@@ -261,7 +286,7 @@ export class Transactions {
 
         if (this._transactions.length === 0) {
             const noTransactionsMessage = document.createElement('li');
-            noTransactionsMessage.textContent = 'No hay transacciones para mostrar.';
+            noTransactionsMessage.textContent = 'No hay transacciones registradas que coincidan con los filtros o la búsqueda.';
             noTransactionsMessage.classList.add('no-transactions-message');
             this._transactionsListContainer.appendChild(noTransactionsMessage);
             return;
@@ -269,26 +294,19 @@ export class Transactions {
 
         this._transactions.forEach(transaction => {
             const listItem = document.createElement('li');
-            listItem.classList.add('transaction-item');
-            listItem.classList.add(transaction.type === 'income' ? 'income-item' : 'expense-item');
+            listItem.classList.add('transaction-item', transaction.type);
 
-            const categoryName = this._categories.find(cat => cat.id === transaction.categoryId)?.name || 'Desconocida';
+            const categoryName = this._categories.find(cat => cat.id === transaction.categoryId)?.name || 'Sin Categoría';
+            const transactionDate = new Date(transaction.date).toLocaleDateString('es-ES');
+            const amountFormatted = `Bs. ${transaction.amount.toFixed(2)}`;
 
-            const transactionDateTime = new Date(transaction.date);
-            const formattedDate = transactionDateTime.toLocaleDateString('es-ES');
-            const formattedTime = transactionDateTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-            
-            let dateDisplay = `${formattedDate} ${formattedTime}`;
-            if (transaction.isEdited) {
-                dateDisplay += ' (editado)';
-            }
+            const amountColorClass = transaction.type === 'income' ? 'amount-income' : 'amount-expense';
 
-            let displayContent = `
+            listItem.innerHTML = `
                 <div class="transaction-details">
                     <span class="transaction-type">${transaction.type === 'income' ? 'Ingreso' : 'Egreso'}</span>
-                    <span class="transaction-amount">Bs. ${transaction.amount.toFixed(2)}</span>
-                    <span class="transaction-date">${dateDisplay}</span>
-                    <span class="transaction-category">Categoría: ${categoryName}</span>
+                    <span class="transaction-category">${categoryName}</span>
+                    <span class="transaction-amount ${amountColorClass}">${amountFormatted}</span> <span class="transaction-date">${transactionDate}</span>
                     <p class="transaction-description">${transaction.description || 'Sin descripción'}</p>
                 </div>
                 <div class="transaction-actions">
@@ -296,7 +314,6 @@ export class Transactions {
                     <a href="#" class="delete-transaction-link" data-id="${transaction.id}">Eliminar</a>
                 </div>
             `;
-            listItem.innerHTML = displayContent;
 
             listItem.querySelector('.edit-transaction-link').addEventListener('click', (e) => {
                 e.preventDefault();
@@ -314,80 +331,43 @@ export class Transactions {
     async handleAddOrUpdateTransaction() {
         const type = this._transactionTypeSelect.getValue();
         const amount = parseFloat(this._transactionAmountInput.getValue());
-        const dateInput = this._transactionDateInput.getValue();
+        const date = this._transactionDateInput.getValue();
         const categoryId = parseInt(this._transactionCategorySelect.getValue(), 10);
-        const description = this._transactionDescriptionTextarea.getValue().trim();
+        const description = this._transactionDescriptionTextarea.getValue();
 
-        if (!type || isNaN(amount) || amount <= 0 || !dateInput || !categoryId) {
-            alert('Por favor, complete todos los campos obligatorios: Tipo, Monto (debe ser positivo), Fecha y Categoría.');
+        if (!type || isNaN(amount) || amount <= 0 || !date || !categoryId) {
+            alert('Por favor, complete todos los campos de la transacción: Tipo, Monto (debe ser positivo), Fecha y Categoría.');
             return;
         }
-
-        const selectedCategory = this._categories.find(cat => cat.id === categoryId);
-        if (!selectedCategory) {
-            alert('Categoría seleccionada no válida.');
-            return;
-        }
-
-        const parts = dateInput.split('-');
-        const year = parseInt(parts[0], 10); 
-        const month = parseInt(parts[1], 10) - 1; 
-        const day = parseInt(parts[2], 10);
-
-        const selectedDateLocal = new Date(year, month, day);
-
-        const now = new Date();
-
-        selectedDateLocal.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
-
-        const fullDateTime = selectedDateLocal.toISOString();
 
         const transactionData = {
             type,
             amount,
-            date: fullDateTime,
+            date,
             categoryId,
-            categoryName: selectedCategory.name,
             description
         };
 
         try {
             if (this._currentEditingTransactionId) {
-                const originalTransaction = this._transactions.find(t => t.id === this._currentEditingTransactionId);
-                if (originalTransaction) {
-                    const originalDateOnly = new Date(originalTransaction.date).toISOString().slice(0, 10);
-
-                    if (dateInput === originalDateOnly) {
-                        transactionData.date = originalTransaction.date;
-                    } else {
-                        transactionData.date = fullDateTime;
-                    }
-
-                    transactionData.isEdited = true;
-                    transactionData.id = this._currentEditingTransactionId;
-                    await this._db.updateTransaction(transactionData);
-                    alert('Transacción actualizada exitosamente.');
-                    this._currentEditingTransactionId = null;
-                } else {
-                    alert('Error: Transacción original no encontrada para actualizar.');
-                    return;
-                }
+                transactionData.id = this._currentEditingTransactionId;
+                await this._db.updateTransaction(transactionData);
+                alert('Transacción actualizada exitosamente.');
+                this._currentEditingTransactionId = null;
             } else {
-                transactionData.isEdited = false; 
                 await this._db.addTransaction(transactionData);
                 alert('Transacción registrada exitosamente.');
             }
             this.clearForm();
-            await this.loadTransactions();
-            this.filterAndSearchTransactions();
+            document.dispatchEvent(new CustomEvent('transactionsUpdated'));
+            await this.applyFilters();
         } catch (error) {
             console.error('Error al guardar transacción:', error);
             alert('Error al guardar la transacción. Por favor, intente de nuevo.');
         }
     }
 
-
-    async handleEditTransaction(id) {
+    handleEditTransaction(id) {
         if (this._currentEditingTransactionId !== null) {
             this.clearForm();
         }
@@ -398,23 +378,24 @@ export class Transactions {
             this._currentEditingTransactionId = id;
             this._transactionTypeSelect.setValue(transactionToEdit.type);
             this._transactionAmountInput.setValue(transactionToEdit.amount);
-            this._transactionDateInput.setValue(transactionToEdit.date.slice(0, 10));
-            this._transactionCategorySelect.setValue(transactionToEdit.categoryId);
+            this._transactionDateInput.setValue(transactionToEdit.date);
+            this._transactionCategorySelect.setValue(transactionToEdit.categoryId.toString());
             this._transactionDescriptionTextarea.setValue(transactionToEdit.description);
+            this._addTransactionButton.setText('Actualizar Transacción');
         } else {
             alert('Transacción no encontrada para editar.');
         }
     }
 
     async handleDeleteTransaction(id, amount, type, categoryName) {
-        const confirmDelete = confirm(`¿Estás seguro de que deseas eliminar la transacción de ${type === 'income' ? 'Ingreso' : 'Egreso'} de Bs. ${amount.toFixed(2)} en la categoría "${categoryName}"?`);
+        const confirmDelete = confirm(`¿Estás seguro de que deseas eliminar la transacción de ${type === 'income' ? 'Ingreso' : 'Egreso'} de ${amount.toFixed(2)} Bs. en la categoría "${categoryName}"?`);
 
         if (confirmDelete) {
             try {
                 await this._db.deleteTransaction(id);
                 alert('Transacción eliminada exitosamente.');
-                await this.loadTransactions();
-                this.filterAndSearchTransactions();
+                document.dispatchEvent(new CustomEvent('transactionsUpdated'));
+                await this.applyFilters();
             } catch (error) {
                 console.error('Error al eliminar transacción:', error);
                 alert('Hubo un error al intentar eliminar la transacción. Por favor, inténtalo de nuevo.');
@@ -427,16 +408,30 @@ export class Transactions {
         this._transactionAmountInput.setValue('');
         this._transactionDateInput.setValue(new Date().toISOString().slice(0, 10));
         if (this._categories.length > 0) {
-            this._transactionCategorySelect.setValue(this._categories[0].id);
+            const validCategories = this._categories.filter(cat => cat.id !== '');
+            if (validCategories.length > 0) {
+                this._transactionCategorySelect.setValue(validCategories[0].id);
+            } else {
+                this._transactionCategorySelect.setValue('');
+            }
         } else {
             this._transactionCategorySelect.setValue('');
         }
         this._transactionDescriptionTextarea.setValue('');
         this._currentEditingTransactionId = null;
+        this._addTransactionButton.setText('Guardar');
+    }
 
-        const addButton = this._container.querySelector('.register .button');
-        if (addButton) {
-            addButton.textContent = 'Guardar';
-        }
+    async applyFilters() {
+        console.log('Aplicando filtros...');
+        await this.filterAndSearchTransactions();
+    }
+
+    async clearFilters() {
+        console.log('Limpiando filtros...');
+        this._filterTypeSelect.setValue('all');
+        this._filterCategorySelect.setValue('all');
+        this._searchTextInput.setValue('');
+        await this.applyFilters();
     }
 }

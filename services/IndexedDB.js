@@ -92,23 +92,39 @@ export class IndexedDB {
         });
     }
 
-    async getBudgets() {
-        await this.initialize();
-        return new Promise((resolve, reject) => {
-            const transaction = this._db.transaction(['budgets'], 'readonly');
-            const store = transaction.objectStore('budgets');
-            const request = store.getAll();
+    async getBudgets(filters = {}) {
+    return new Promise((resolve, reject) => {
+        const request = this._db.transaction('budgets', 'readonly')
+                                .objectStore('budgets')
+                                .getAll();
 
-            request.onsuccess = () => {
-                console.log('IndexedDB: Todos los presupuestos recuperados.');
-                resolve(request.result);
-            };
-            request.onerror = (event) => {
-                console.error('IndexedDB: Error al obtener presupuestos:', event.target.error);
-                reject(event.target.error);
-            };
-        });
-    }
+        request.onsuccess = (event) => {
+            let budgets = event.target.result;
+
+            if (Object.keys(filters).length > 0) {
+                budgets = budgets.filter(budget => {
+                    let matches = true;
+                    if (filters.categoryId && budget.categoryId !== filters.categoryId) {
+                        matches = false;
+                    }
+                    if (filters.month && budget.month !== filters.month) {
+                        matches = false;
+                    }
+                    if (filters.year && budget.year !== filters.year) {
+                        matches = false;
+                    }
+                    return matches;
+                });
+            }
+            resolve(budgets);
+        };
+
+        request.onerror = (event) => {
+            console.error('Error al obtener presupuestos de IndexedDB:', event.target.error);
+            reject(event.target.error);
+        };
+    });
+}
     
     async updateBudget(budget) {
         await this.initialize();

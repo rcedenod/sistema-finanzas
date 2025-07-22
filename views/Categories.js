@@ -392,25 +392,28 @@ export class Categories {
         this.renderCategoriesList();
     }
 
-    async handleDeleteCategory(id, name) {
-        const confirmDelete = confirm(`¿Estás seguro de que deseas eliminar la categoría "${name}"? Todas las transacciones asociadas a esta categoría también serán eliminadas.`);
+    async handleDeleteCategory(categoryId, categoryName) {
+    const confirmDelete = confirm(`¿Estás seguro de que deseas eliminar la categoría "${categoryName}"? Esta acción eliminará todas las transacciones y presupuestos asociados a esta categoría.`);
 
-        if (confirmDelete) {
-            try {
-                await this._db.deleteTransactionsByCategoryId(id);
-                console.log(`Todas las transacciones para la categoría ${name} (ID: ${id}) han sido eliminadas.`);
+    if (confirmDelete) {
+        try {
+            await this._db.deleteCategory(categoryId);
 
-                await this._db.deleteCategory(id);
-                alert(`¡Categoría "${name}" y sus transacciones asociadas eliminadas exitosamente!`);
-                const event = new CustomEvent('transactionsUpdated');
-                document.dispatchEvent(event);
-                await this.loadCategories();
-            } catch (error) {
-                console.error('Error al eliminar categoría y transacciones:', error);
-                alert('Hubo un error al intentar eliminar la categoría o sus transacciones. Por favor, inténtalo de nuevo.');
-            }
+            const event = new CustomEvent('categoryDeleted', { detail: { categoryId: categoryId } });
+            document.dispatchEvent(event);
+
+            const categoriesUpdateEvent = new CustomEvent('categoriesUpdated');
+            document.dispatchEvent(categoriesUpdateEvent);
+
+            alert(`Categoría "${categoryName}" y sus elementos asociados eliminados exitosamente.`);
+            await this.loadCategories();
+
+        } catch (error) {
+            console.error('Error al eliminar categoría:', error);
+            alert('Hubo un error al intentar eliminar la categoría. Por favor, inténtalo de nuevo.');
         }
     }
+}
 
     async handleResetCategories() {
         const confirmReset = confirm('¿Estás seguro de que deseas reestablecer todas las categorías a sus valores por defecto? Esto eliminará todas las categorías personalizadas.');

@@ -10,6 +10,7 @@
         "extra view-area";
     width: 100%;
     height: 100%;
+    background-color: #ecf0f1;
 }
 
 .header {
