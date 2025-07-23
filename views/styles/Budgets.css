@@ -29,7 +29,7 @@
 
 .budget-form-area {
     grid-area: budget-form-area;
-    background-color: #fff;
+    background-color: #f8f9fa;;
     padding: 15px;
     border: 1px solid #eee;
     border-radius: 8px;
@@ -65,7 +65,7 @@
 
 .budget-list-area {
     grid-area: budget-list-area;
-    background-color: #fff;
+    background-color: #f8f9fa;
     padding: 15px;
     border: 1px solid #eee;
     border-radius: 8px;
@@ -169,7 +169,7 @@
 
 .budget-charts-area {
     grid-area: budget-charts-area;
-    background-color: #fff;
+    background-color: #f8f9fa;
     padding: 15px;
     border: 1px solid #eee;
     border-radius: 8px;

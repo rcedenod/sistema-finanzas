@@ -2,11 +2,11 @@
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: 0.2fr 1.4fr 1.4fr;
-    gap: 15px;
+    gap: 10px;
     grid-auto-flow: row;
     grid-template-areas:
         "header header header"
-        "aside recent-transactions graph2"
+        "aside recent-transactions expenses-comparative"
         "aside expenses-incomes balance-evolution";
     height: 100%;
     width: 100%;
@@ -47,7 +47,7 @@
 .transactions-list {
     list-style: none;
     padding: 0;
-    width: 100%;
+    width: 98%;
 }
 
 .transaction-item {
@@ -136,7 +136,7 @@
     color: #888;
     padding: 10px;
     font-style: italic;
-    width: 100%; 
+    width: 100%;
 }
 
 .expenses-incomes {
@@ -174,16 +174,204 @@
 .aside {
     grid-area: aside;
     background-color: #ffffff;
-    padding: 20px;
+    padding: 10px;
     border-radius: 8px;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto; 
+    gap: 15px;
+    grid-auto-flow: row;
+    grid-template-areas:
+        "user"
+        "budget"
+        "filters";
+    justify-content: flex-start;
+    align-items: stretch;
+}
+
+.user {
+    grid-area: user;
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #34495E;
+}
+
+.budget {
+    grid-area: budget;
+    background-color: #edfdfd;
+    padding: 15px;
+    border-radius: 5px;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
+    color: #34495E;
+    line-height: 1.5;
+    overflow-y: auto;
 }
 
-.graph2 {
-    grid-area: graph2;
+.budget h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    color: #28a745;
+}
+
+.budget h4 {
+    margin-top: 15px;
+    margin-bottom: 8px;
+    font-size: 1em;
+    color: #34495E;
+    width: 100%;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 5px;
+}
+
+.budget p {
+    margin: 0;
+    font-size: 0.9em;
+}
+
+.budget-summary {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.budget-summary p {
+    margin-bottom: 5px;
+}
+
+.budget-category-list {
+    list-style: none;
+    padding: 0;
+    width: 100%;
+    margin: 0;
+}
+
+.budget-category-item {
+    padding: 8px 0;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 0.85em;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.budget-category-item:last-child {
+    border-bottom: none;
+}
+
+.budget-category-item strong {
+    font-size: 0.95em;
+    color: #333;
+}
+
+.budget-ok {
+    color: #28a745;
+}
+
+.budget-warning {
+    color: #ffc107;
+}
+
+.budget-exceeded {
+    color: #dc3545;
+}
+
+.budget-category-item.ok {
+    color: #28a745;
+}
+
+.budget-category-item.warning {
+    color: #ffc107;
+}
+
+.budget-category-item.exceeded {
+    color: #dc3545;
+}
+
+.budget-category-item.no-budget-defined {
+    color: #6c757d;
+    font-style: italic;
+}
+
+.error-message {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.filters {
+    grid-area: filters;
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column; 
+    gap: 10px;
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+
+.filters h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    color: #34495E;
+}
+
+.select-wrapper,
+.input-wrapper {
+    width: 100%;
+}
+
+.filter-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.apply-filter-btn-wrapper,
+.clear-filter-btn-wrapper {
+    width: 100%;
+}
+
+.btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    width: 100%;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.expenses-comparative {
+    grid-area: expenses-comparative;
     background-color: #ffffff;
     padding: 20px;
     border-radius: 8px;

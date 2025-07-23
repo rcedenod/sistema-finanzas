@@ -28,7 +28,6 @@ export class Select {
         styles = {},
         focusStyles = {},
         disabledStyles = {},
-        hoverStyles = {},
         isDisabled = false,
         onChange = () => {}
     }) {

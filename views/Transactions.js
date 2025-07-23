@@ -219,14 +219,14 @@ export class Transactions {
         filtersArea.appendChild(filterButtonsWrapper);
 
         this._applyFilterButton = new Button(filterButtonsWrapper, {
-            text: 'Aplicar Filtro',
+            text: 'Aplicar',
             styles: { flex: '1', padding: '10px', marginTop: '10px', marginRight: '5px' },
             onClick: () => this.applyFilters()
         });
         this._applyFilterButton.render();
 
         this._clearFilterButton = new Button(filterButtonsWrapper, {
-            text: 'Limpiar Filtro',
+            text: 'Limpiar',
             styles: { flex: '1', padding: '10px', marginTop: '10px', backgroundColor: '#6c757d', marginLeft: '5px' }
         });
         this._clearFilterButton.render();

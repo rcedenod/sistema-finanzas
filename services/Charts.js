@@ -244,12 +244,11 @@ export class Charts {
 
         try {
             const allTransactions = await this._db.getTransactions();
-            const currentYear = new Date().getFullYear();
-
+            // ¡EL CAMBIO VA AQUÍ! Usa el parámetro 'year' en lugar de new Date().getFullYear()
             const transactionsForMonth = allTransactions.filter(t => {
                 const transactionDate = new Date(t.date);
                 return (transactionDate.getMonth() + 1) === month &&
-                       transactionDate.getFullYear() === currentYear;
+                       transactionDate.getFullYear() === year; // <-- ¡Cambiado a 'year'
             });
 
             let totalIncomes = 0;
@@ -265,15 +264,15 @@ export class Charts {
                 }
             });
 
-            console.log(`Total de Ingresos para ${this._getMonthName(month - 1)} ${year}:`, totalIncomes.toFixed(2));
-            console.log(`Total de Egresos para ${this._getMonthName(month - 1)} ${year}:`, totalExpenses.toFixed(2));
+            console.log(`Total de ingresos para ${this._getMonthName(month - 1)} ${year}:`, totalIncomes.toFixed(2));
+            console.log(`Total de egresos para ${this._getMonthName(month - 1)} ${year}:`, totalExpenses.toFixed(2));
 
 
             const monthName = this._getMonthName(month - 1);
             const chartTitle = `Ingresos vs. Egresos - ${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${year}`;
 
             if (totalIncomes === 0 && totalExpenses === 0) {
-                chartContainer.innerHTML = '<p class="no-chart-data-message">No hay ingresos ni egresos registrados para este mes.</p>';
+                chartContainer.innerHTML = '<p class="no-chart-data-message">No hay ingresos ni egresos registrados para este mes/año.</p>';
                 return;
             }
 
@@ -398,7 +397,7 @@ export class Charts {
                         data: visibleMonthlyBalances,
                         borderColor: 'rgba(54, 162, 235, 1)',
                         backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                        tension: 0.3,
+                        tension: 0.5,
                         fill: true,
                         pointBackgroundColor: 'rgba(54, 162, 235, 1)',
                         pointBorderColor: '#fff',
@@ -486,7 +485,7 @@ async genBudgetComparisonChart(targetElement, month, year) {
         });
 
         if (labels.length === 0) {
-            targetElement.innerHTML = '<p class="no-chart-data-message">No hay datos de presupuesto para este mes.</p>';
+            targetElement.innerHTML = '<p class="no-chart-data-message">No hay datos de presupuesto para este mes/año.</p>';
             return;
         }
 
@@ -607,7 +606,7 @@ async genBudgetComparisonChart(targetElement, month, year) {
                     labels: labels,
                     datasets: [
                         {
-                            label: 'Egresos Estimados',
+                            label: 'Egresos estimados',
                             data: estimatedTotals,
                             borderColor: 'rgb(75, 192, 192)',
                             backgroundColor: 'rgba(75, 192, 192, 0.2)',
@@ -615,7 +614,7 @@ async genBudgetComparisonChart(targetElement, month, year) {
                             tension: 0.1
                         },
                         {
-                            label: 'Egresos Reales',
+                            label: 'Egresos reales',
                             data: actualTotals,
                             borderColor: 'rgb(255, 99, 132)',
                             backgroundColor: 'rgba(255, 99, 132, 0.2)',
@@ -637,7 +636,7 @@ async genBudgetComparisonChart(targetElement, month, year) {
                         },
                         title: {
                             display: true,
-                            text: 'Proyección Mensual de Egresos (Estimado vs. Real)',
+                            text: 'Proyección mensual de egresos (estimados vs. reales)',
                             font: {
                                 size: 14
                             }
@@ -663,6 +662,146 @@ async genBudgetComparisonChart(targetElement, month, year) {
 
         } catch (error) {
             console.error('Error al cargar el gráfico de proyección de egresos:', error);
+        }
+    }
+
+    async genExpensesComparativeBarChart(targetElement, currentMonth, currentYear) {
+        const chartId = `expensesComparativeBarChart-${targetElement.id}`;
+        if (this._chartInstances[chartId]) {
+            this._chartInstances[chartId].destroy();
+            delete this._chartInstances[chartId];
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.id = chartId;
+        
+        let chartContainer = targetElement.querySelector('.expenses-comparative-chart-container');
+        if (!chartContainer) {
+            chartContainer = document.createElement('div');
+            chartContainer.classList.add('expenses-comparative-chart-container');
+            chartContainer.style.width = '100%';
+            chartContainer.style.height = '100%';
+            chartContainer.style.display = 'flex';
+            chartContainer.style.justifyContent = 'center';
+            chartContainer.style.alignItems = 'center';
+
+            targetElement.appendChild(chartContainer);
+        }
+        chartContainer.innerHTML = '';
+        chartContainer.appendChild(canvas);
+
+        const ctx = canvas.getContext('2d');
+
+        try {
+            const allTransactions = await this._db.getTransactions();
+            const allBudgets = await this._db.getBudgets();
+
+            const monthLabels = [
+                'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+                'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
+            ];
+
+            const realExpensesByMonth = new Array(12).fill(0);
+            const estimatedExpensesByMonth = new Array(12).fill(0);
+
+            allTransactions.filter(t => {
+                const transactionDate = new Date(t.date);
+                return t.type === 'expense' && transactionDate.getFullYear() === currentYear;
+            }).forEach(expense => {
+                const monthIndex = new Date(expense.date).getMonth();
+                realExpensesByMonth[monthIndex] += expense.amount;
+            });
+            console.log('Egresos Reales por Mes (todos):', realExpensesByMonth);
+
+            allBudgets.filter(b => b.year === currentYear)
+            .forEach(budget => {
+                const monthIndex = budget.month - 1;
+                if (monthIndex >= 0 && monthIndex < 12) {
+                    estimatedExpensesByMonth[monthIndex] += budget.amount;
+                } else {
+                    console.warn(`Presupuesto con mes inválido o ausente:`, budget);
+                }
+            });
+            console.log('Egresos Estimados por mes (todos):', estimatedExpensesByMonth);
+
+            const chartLabels = monthLabels;
+            const chartRealExpenses = realExpensesByMonth;
+            const chartEstimatedExpenses = estimatedExpensesByMonth;
+
+            if (chartRealExpenses.every(val => val === 0) && chartEstimatedExpenses.every(val => val === 0)) {
+                chartContainer.innerHTML = '<p class="no-chart-data-message">No hay datos de egresos para comparar este año.</p>';
+                return;
+            }
+            
+            const chartTitle = `Comparación de egresos (reales vs. estimados) - ${currentYear}`;
+
+            this._chartInstances[chartId] = new window.Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartLabels,
+                    datasets: [
+                        {
+                            label: 'Egresos reales',
+                            data: chartRealExpenses,
+                            backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1,
+                            borderRadius: 5,
+                        },
+                        {
+                            label: 'Egresos estimados',
+                            data: chartEstimatedExpenses,
+                            backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1,
+                            borderRadius: 5, 
+                        }
+                    ]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: chartTitle,
+                            font: {
+                                size: 14
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Monto (Bs.)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Mes'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+        } catch (error) {
+            console.error('Error al cargar los datos del gráfico de comparación de egresos:', error);
         }
     }
 }

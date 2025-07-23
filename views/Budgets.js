@@ -384,7 +384,7 @@ export class Budgets {
         const amount = parseFloat(this._budgetAmountInput.getValue());
 
         if (!month || !year || !categoryId || isNaN(amount) || amount <= 0) {
-            alert('Por favor, complete todos los campos de presupuesto: Mes, Año, Categoría y Monto (debe ser positivo).');
+            alert('Por favor, complete todos los campos de presupuesto: mes, año, categoría y monto (debe ser positivo).');
             return;
         }
 
@@ -498,7 +498,7 @@ export class Budgets {
         }
         this._budgetAmountInput.setValue('');
         this._currentEditingBudgetId = null;
-        this._saveBudgetButton.setText('Guardar Presupuesto');
+        this._saveBudgetButton.setText('Guardar');
     }
 
     async applyFilters() {
