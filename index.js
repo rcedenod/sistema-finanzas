@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     app.appendChild(appGridContainer);
 
     // creamos la barra de navegacion (navbar) con el titulo 'budgenet' y la añadimos.
-    const navbarElement = new Navbar('budgenet').render();
+    const navbarElement = new Navbar('Budgenet').render();
     appGridContainer.appendChild(navbarElement);
 
     // definimos las vistas: dashboard, transacciones, categorias y presupuestos.

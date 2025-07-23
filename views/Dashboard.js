@@ -16,7 +16,7 @@ export class Dashboard {
     _currentMonth = null;
     _currentYear = null;
     _expensesIncomesArea = null;
-    _budgetStatusElement = null; // Ensure this is correctly initialized as an HTMLElement
+    _budgetStatusElement = null;
 
     constructor(dashboardView, db, charts) {
         if (!(dashboardView instanceof HTMLElement)) {
@@ -94,7 +94,6 @@ export class Dashboard {
 
         const userArea = document.createElement('div');
         userArea.classList.add('user');
-        userArea.innerHTML = '<h3>Información del usuario</h3>';
         asideArea.appendChild(userArea);
 
         const monthNames = [

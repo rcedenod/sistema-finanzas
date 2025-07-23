@@ -100,7 +100,7 @@ export class Budgets {
         const headerArea = document.createElement('div');
         headerArea.classList.add('header');
         const title = document.createElement('h2');
-        title.textContent = 'Gestión de presupuestos';
+        title.textContent = 'Gestión de presupuestos de egresos';
         headerArea.appendChild(title);
         budgetsView.appendChild(headerArea);
 
