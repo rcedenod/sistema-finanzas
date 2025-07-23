@@ -244,11 +244,10 @@ export class Charts {
 
         try {
             const allTransactions = await this._db.getTransactions();
-            // ¡EL CAMBIO VA AQUÍ! Usa el parámetro 'year' en lugar de new Date().getFullYear()
             const transactionsForMonth = allTransactions.filter(t => {
                 const transactionDate = new Date(t.date);
                 return (transactionDate.getMonth() + 1) === month &&
-                       transactionDate.getFullYear() === year; // <-- ¡Cambiado a 'year'
+                       transactionDate.getFullYear() === year;
             });
 
             let totalIncomes = 0;
